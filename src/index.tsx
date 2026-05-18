@@ -73,6 +73,7 @@ const T = LANG_ZH ? {
   cost:       "费用:",
   saved:      "累计节省:",
   model:      "模型:",
+  provider:   "提供商:",
   rate:       "单价:",
   hitFolded:  "命中",
   inputRate:  "输入",
@@ -88,6 +89,7 @@ const T = LANG_ZH ? {
   cost:       "Cost:",
   saved:      "Total Saved:",
   model:      "Model:",
+  provider:   "Provider:",
   rate:       "Rate:",
   hitFolded:  "hit",
   inputRate:  "in",
@@ -229,9 +231,19 @@ function TokenCachePanel(props: {
     let pid = ""
     let mid = ""
 
+    // Track individual hit rates per assistant message to compute trend
+    let prevMsgHitRate = -1
+    let lastMsgHitRate = -1
+
     for (const msg of msgs) {
       if (msg.role !== "assistant") continue
       const t = (msg as AssistantMessage).tokens
+      const msgInputTokens = num(t.input) + num(t.cache?.read)
+      const msgReadTokens = num(t.cache?.read)
+      if (msgInputTokens > 0) {
+        prevMsgHitRate = lastMsgHitRate
+        lastMsgHitRate = (msgReadTokens / msgInputTokens) * 100
+      }
       input += num(t.input)
       read   += num(t.cache?.read)
       write  += num(t.cache?.write)
@@ -267,10 +279,19 @@ function TokenCachePanel(props: {
     const model = mid.split("/").pop() ?? mid
     const hasPricing = inputRate > 0 || cacheReadRate > 0
 
+    let trend = 0
+    if (prevMsgHitRate >= 0 && lastMsgHitRate >= 0) {
+      trend = lastMsgHitRate - prevMsgHitRate
+    }
+
+    const providerName = pid || ""
+
     return {
       hitRate, read, write, freshInput: input, output,
       cost, saved, model, inputRate, cacheReadRate, hasPricing,
       hasData: read > 0 || write > 0 || input > 0 || output > 0 || cost > 0,
+      trend,
+      providerName,
     }
   })
 
@@ -352,6 +373,11 @@ function TokenCachePanel(props: {
             <span style={{ fg: pal().text }}>{T.hit} </span>
             <span style={{ fg: hitColor() }}>[{bar()}] </span>
             <span style={{ fg: pal().text }}>{pct()}</span>
+            <Show when={d().trend !== 0}>
+              <span style={{ fg: d().trend > 0 ? pal().success : pal().error }}>
+                {" "}{d().trend > 0 ? "\u2191" : "\u2193"}{Math.abs(d().trend).toFixed(1)}%
+              </span>
+            </Show>
           </text>
 
           {/* token breakdown */}
@@ -385,6 +411,13 @@ function TokenCachePanel(props: {
               <span style={{ fg: pal().muted }}>{T.saved}</span>
               <span>{" ".repeat(Math.max(1, panelWidth() - GUTTER - visualWidth(T.saved) - visualWidth("~" + fmtCost(d().saved))))}</span>
               <span style={{ fg: pal().success }}>~{fmtCost(d().saved)}</span>
+            </text>
+          </Show>
+
+          {/* provider */}
+          <Show when={d().providerName}>
+            <text fg={pal().muted}>
+              {justify(T.provider, d().providerName)}
             </text>
           </Show>
 
