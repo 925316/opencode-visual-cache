@@ -40,13 +40,32 @@
 
 ## 安装
 
-> [!NOTE]
-> 安装方式待定 —— 本喵还在研究如何发布喵~
-> 发布后将更新此部分。
+### 1. 安装插件
+
+```bash
+npm install -g opencode-visual-cache
+```
+
+### 2. 配置 TUI 插件
+
+创建或编辑 `~/.config/opencode/tui.jsonc`：
 
 ```jsonc
-// TODO: 安装步骤
+{
+  "$schema": "https://opencode.ai/tui.json",
+  "plugin": ["opencode-visual-cache"]
+}
 ```
+
+或者运行安装脚本自动配置：
+
+```bash
+npx opencode-visual-cache
+```
+
+### 3. 重启 OpenCode
+
+进入任意 session，侧边栏即可看到缓存统计面板。
 
 ---
 

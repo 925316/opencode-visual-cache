@@ -41,12 +41,32 @@
 
 ## Installation
 
-> [!NOTE]
-> Installation method TBD — will be updated after publishing.
+### 1. Install the plugin
+
+```bash
+npm install -g opencode-visual-cache
+```
+
+### 2. Configure TUI plugin
+
+Create or edit `~/.config/opencode/tui.jsonc`:
 
 ```jsonc
-// TODO: install steps
+{
+  "$schema": "https://opencode.ai/tui.json",
+  "plugin": ["opencode-visual-cache"]
+}
 ```
+
+Or run the auto-installer:
+
+```bash
+npx opencode-visual-cache
+```
+
+### 3. Restart OpenCode
+
+Open any session — the cache stats panel appears in the sidebar.
 
 ---
 
