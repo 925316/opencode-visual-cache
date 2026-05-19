@@ -90,7 +90,7 @@ const T = LANG_ZH ? {
   writeRate:  "写入",
   noData:    "等待缓存数据...",
   tok:        "tok",
-  distTitle:  "可解析 Token 分布",
+  distTitle:  "估算 Token 分布",
   distSys:    "系统提示:",
   distUser:   "用户:",
   distAgent:  "Agent 指令:",
@@ -119,7 +119,7 @@ const T = LANG_ZH ? {
   writeRate:  "write",
   noData:    "Waiting for cache data...",
   tok:        "tok",
-  distTitle:  "Parseable Token Dist.",
+  distTitle:  "Estimated Token Dist.",
   distSys:    "System:",
   distUser:   "User:",
   distAgent:  "Agent Instr:",
@@ -180,20 +180,30 @@ function desaturateTo(raw: unknown, maxSat: number, fallback: string): string {
     // already muted — return as hex
     return "#" + [c.r, c.g, c.b].map((v) => v.toString(16).padStart(2, "0")).join("")
   }
-  // binary search the right amount of grey to mix in
+  /**
+   * Binary search for the optimal grey-mix ratio α (0…1).
+   *
+   * 12 iterations → 1/2^12 ≈ 1/4096 resolution.  The downstream RGB
+   * channels are only 0–255 (8 bit), so 8 iterations (1/256) would
+   * technically suffice; 12 is intentionally over-budget — the extra
+   * precision costs almost nothing and guarantees the saturation probe
+   * converges to within a fraction of an 8‑bit step, eliminating
+   * colour banding in edge cases.
+   */
+  // BT.601 luma (perceptual brightness used as the grey anchor)
+  const luma = c.r * 0.299 + c.g * 0.587 + c.b * 0.114
   let lo = 0, hi = 1
   for (let i = 0; i < 12; i++) {
     const mid = (lo + hi) / 2
-    const nr = Math.round(c.r + ((c.r * 0.299 + c.g * 0.587 + c.b * 0.114) - c.r) * mid)
-    const ng = Math.round(c.g + ((c.r * 0.299 + c.g * 0.587 + c.b * 0.114) - c.g) * mid)
-    const nb = Math.round(c.b + ((c.r * 0.299 + c.g * 0.587 + c.b * 0.114) - c.b) * mid)
+    const nr = Math.round(c.r + (luma - c.r) * mid)
+    const ng = Math.round(c.g + (luma - c.g) * mid)
+    const nb = Math.round(c.b + (luma - c.b) * mid)
     if (saturation(nr, ng, nb) > maxSat) lo = mid
     else hi = mid
   }
-  const grey = c.r * 0.299 + c.g * 0.587 + c.b * 0.114
-  const nr = Math.round(c.r + (grey - c.r) * hi)
-  const ng = Math.round(c.g + (grey - c.g) * hi)
-  const nb = Math.round(c.b + (grey - c.b) * hi)
+  const nr = Math.round(c.r + (luma - c.r) * hi)
+  const ng = Math.round(c.g + (luma - c.g) * hi)
+  const nb = Math.round(c.b + (luma - c.b) * hi)
   return "#" + [nr, ng, nb].map((v) => Math.max(0, Math.min(255, v)).toString(16).padStart(2, "0")).join("")
 }
 
@@ -208,7 +218,18 @@ const FALLBACK = {
   border:  "#6B6B63",
 } as const
 
-/** Morandi ceiling — colours above this saturation get pulled down. */
+/**
+ * Desaturation ceiling for the Morandi-style palette.
+ *
+ * Morandi colours float around 0.15–0.30 saturation in HSL space.
+ * 0.28 sits near the upper end of that range: it strips the aggressive
+ * punch from high-saturation themes (Dracula, Solarized …) while
+ * preserving enough colour identity that green / orange / red hit-rate
+ * coding stays distinguishable.
+ *
+ * Lower → more grey, harder to tell colours apart.
+ * Higher → bright themes bleed through and defeat the muted look.
+ */
 const MAX_SAT = 0.28
 
 function progressBar(percent: number, width: number): string {
@@ -235,7 +256,11 @@ function fmtCost(n: number): string {
 }
 
 // ── token estimation ──
-// Rough estimate: ~4 ASCII chars ~ 1 token, ~1.5 CJK chars ~ 1 token
+// Character-based BPE approximation.  Default ratios (~4 ASCII or ~1.5 CJK
+// chars per token) work well for natural language but systematically
+// under-count tokens in JSON and source code where every punctuation mark
+// tends to be its own token.  Detect these cases and tighten the ratio.
+// See: GPT-4 / Claude tokenizer behaviour with structured text.
 
 function estimateTokens(text: string): number {
   if (!text || text.length === 0) return 0
@@ -250,7 +275,18 @@ function estimateTokens(text: string): number {
     else if (code >= 0x2E80 && code <= 0x2EFF) cjk++   // CJK Radicals
     else ascii++
   }
-  return Math.max(1, Math.ceil(ascii / 4 + cjk / 1.5))
+
+  // Tighten the ASCII ratio for structured content where punctuation is
+  // token-dense.  JSON key-value patterns and code keywords are strong
+  // signals that the default 4:1 ratio will materially under-estimate.
+  const trimmed = text.trimStart()
+  const jsonLike = (trimmed.startsWith("{") || trimmed.startsWith("["))
+    && /"[^"]+"\s*:/.test(text)
+  const codeLike = !jsonLike
+    && /```|^import |^export |^function |^const |^let |^var |^class |^interface |^type |^def |^fn |^pub |^use |^mod |^package /m.test(text)
+
+  const asciiPerToken = jsonLike ? 2 : codeLike ? 2.5 : 4
+  return Math.max(1, Math.ceil(ascii / asciiPerToken + cjk / 1.5))
 }
 
 interface TokenDist {
@@ -445,6 +481,16 @@ function TokenCachePanel(props: {
       const apiTotalInput = dist.apiInput
       // Use API output if available (StepFinishPart is more accurate than AssistantMessage.tokens)
       const finalOutput = dist.apiOutput > 0 ? dist.apiOutput : dist.output
+
+      // Gap inference: the SDK does not expose per-part token counts, so any
+      // API-exact input total that exceeds the locally-estimated sum is attributed
+      // to system prompt / agent config / tool-definition overhead.  Add it to the
+      // system bucket rather than replacing the local estimate.
+      const overhead = Math.max(0, apiTotalInput - totalInput)
+      if (overhead >= 50) {
+        dist.system += overhead
+      }
+
       hasDistData = totalInput > 0 || finalOutput > 0 || apiTotalInput > 0
     } catch {
       // Graceful degradation — dist stays at zeroes
