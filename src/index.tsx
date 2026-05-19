@@ -223,6 +223,9 @@ const PCT_FIXED_WIDTH = 5  // "XX.X%" 固定 5 字符宽度
 const HEADER_PREFIX = 2    // 折叠态标题行：▶/▼ 图标 + 后面的空格
 const UNIT_GAP = 1         // 计量单位前的空格（如 "tok"）
 
+/** Current plugin version — bump alongside npm version. */
+const PLUGIN_VERSION = '1.1.1'
+
 function TokenCachePanel(props: {
   theme: TuiThemeCurrent
   api: TuiPluginApi
@@ -381,7 +384,12 @@ function TokenCachePanel(props: {
       {/* collapsible header */}
       <text onMouseUp={() => setOpen((o) => !o)}>
         <span style={{ fg: pal().muted }}>{open() ? "\u25bc " : "\u25b6 "}</span>
-        <span style={{ fg: pal().primary }}><b>{T.title}</b></span>
+        <span style={{ fg: pal().primary }}>
+            <b>{T.title}</b>
+            <Show when={open()}>
+              <span style={{ fg: pal().muted }}> (v{PLUGIN_VERSION})</span>
+            </Show>
+          </span>
         <Show when={!open() && data().hasData}>
           <Show when={data().hasTrendData}>
             <span>
