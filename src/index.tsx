@@ -619,8 +619,7 @@ function TokenCachePanel(props: {
 
   return (
     <box
-      border={borderVisible()}
-      borderColor={pal().border}
+      {...(borderVisible() ? { border: true, borderColor: pal().border } : {})}
       paddingTop={0}
       paddingBottom={0}
       paddingLeft={borderVisible() ? 2 : 0}
