@@ -19,7 +19,7 @@
 
 ---
 
-## 图片展示
+## 1. 图片展示
 
 <div align="center"> 
 <strong>支持折叠，节省侧边栏占用👇</strong> <br>
@@ -34,7 +34,7 @@
 
 
 ---
-## 功能
+## 2. 功能
 
 - **缓存命中率**：实时计算并显示缓存命中率，自适应宽度进度条
 - **Token 明细**：缓存读 / 缓存写 / 未命中 / 输出，标签左对齐 · 数据右对齐
@@ -51,9 +51,9 @@
 
 ---
 
-## 安装
+## 3. 安装
 
-### 方式一：OpenCode 命令安装（推荐）
+### 3.1 方式一：OpenCode 命令安装（推荐）
 
 在 OpenCode 中按 **`Ctrl + P`** 打开命令面板，搜索 **`install plugin`**，输入：
 
@@ -63,7 +63,7 @@ opencode-visual-cache@latest
 
 回车即可完成安装与配置。
 
-### 方式二：手动安装
+### 3.2 方式二：手动安装
 
 **1. 安装插件**
 
@@ -82,15 +82,15 @@ npm install -g opencode-visual-cache@latest
 }
 ```
 
-### 重启 OpenCode
+### 3.3 重启 OpenCode
 
 进入任意 session，侧边栏即可看到缓存统计面板。
 
 ---
 
-## 使用指南
+## 4. 使用指南
 
-### 1.1 斜杠命令
+### 4.1 斜杠命令
 
 插件支持通过斜杠命令或命令面板（`Ctrl + P`）动态调整配置，所有设置即时生效并持久化：
 
@@ -103,7 +103,7 @@ npm install -g opencode-visual-cache@latest
 
 切换货币时会自动填入离线内置的近似汇率（以 USD 为基准），用户可随时通过 `/cache-rate` 自定义。
 
-### 1.2 货币与汇率
+### 4.2 货币与汇率
 
 费用展示支持多币种切换：
 
@@ -118,7 +118,7 @@ npm install -g opencode-visual-cache@latest
 
 > 汇率会同步应用到 Session 累计费用、缓存节省金额、以及模型单价展示。
 
-### 1.3 区块可见性
+### 4.3 区块可见性
 
 面板中的三个子区块可以独立关闭，方便在侧边栏空间紧张时隐藏不需要的信息：
 
@@ -130,7 +130,7 @@ npm install -g opencode-visual-cache@latest
 
 ---
 
-## 更新
+## 5. 更新
 
 由于 [OpenCode 已知问题 #6774](https://github.com/anomalyco/opencode/issues/6774)，插件缓存会锁死在首次安装时的版本，不会自动检测 npm 上的新版本。
 
@@ -156,7 +156,7 @@ rm -rf ~/.cache/opencode/packages/opencode-visual-cache@latest
 
 ---
 
-## 调试
+## 6. 调试
 
 强制英文（Windows PowerShell）：
 
@@ -166,13 +166,13 @@ $env:CACHE_TUI_LANG="en"; opencode
 
 ---
 
-## 兼容性
+## 7. 兼容性
 
 代码完全模型无关，支持所有 OpenCode 兼容的 AI 模型（DeepSeek / Claude / GPT 等）。
 Token 数据和定价信息均通过 OpenCode SDK 标准接口获取。
 
 ---
 
-## License
+## 8. License
 
 MIT

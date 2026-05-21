@@ -19,7 +19,7 @@ If you find this plugin useful, a ⭐ would mean a lot — thank you!<br>
 
 ---
 
-## Screenshots
+## 1. Screenshots
 
 <div align="center">
 <strong>Collapsed 👇</strong> <br>
@@ -34,7 +34,7 @@ If you find this plugin useful, a ⭐ would mean a lot — thank you!<br>
 
 ---
 
-## Features
+## 2. Features
 
 - **Cache Hit Rate**: Real-time `cache_read / total_input × 100%` with adaptive-width progress bar
 - **Token Breakdown**: Cache Read / Write / Miss / Output, left-aligned labels, right-aligned values
@@ -51,9 +51,9 @@ If you find this plugin useful, a ⭐ would mean a lot — thank you!<br>
 
 ---
 
-## Installation
+## 3. Installation
 
-### Option 1: OpenCode Command (recommended)
+### 3.1 Option 1: OpenCode Command (recommended)
 
 Press **`Ctrl + P`** in OpenCode to open the command palette, search **`install plugin`**, then type:
 
@@ -63,7 +63,7 @@ opencode-visual-cache@latest
 
 Press Enter to install and configure automatically.
 
-### Option 2: Manual
+### 3.2 Option 2: Manual
 
 **1. Install the plugin**
 
@@ -82,15 +82,15 @@ Create or edit `~/.config/opencode/tui.jsonc`:
 }
 ```
 
-### Restart OpenCode
+### 3.3 Restart OpenCode
 
 Open any session — the cache stats panel appears in the sidebar.
 
 ---
 
-## Usage Guide
+## 4. Usage Guide
 
-### 1.1 Slash Commands
+### 4.1 Slash Commands
 
 The plugin supports slash commands and command palette (`Ctrl + P`) for runtime configuration. All changes take effect immediately and are persisted:
 
@@ -103,7 +103,7 @@ The plugin supports slash commands and command palette (`Ctrl + P`) for runtime 
 
 Switching currency automatically applies a built-in approximate exchange rate (USD-based). Override it anytime with `/cache-rate`.
 
-### 1.2 Currency & Exchange Rate
+### 4.2 Currency & Exchange Rate
 
 Cost display supports multiple currencies:
 
@@ -118,7 +118,7 @@ Cost display supports multiple currencies:
 
 > The rate applies to session cost, cache savings, and per-million pricing — consistently across the panel.
 
-### 1.3 Section Visibility
+### 4.3 Section Visibility
 
 Three sub-sections can be toggled independently to save sidebar space:
 
@@ -130,7 +130,7 @@ Toggled via `/cache-section` — takes effect instantly, no restart required.
 
 ---
 
-## Update
+## 5. Update
 
 Due to a [known OpenCode issue #6774](https://github.com/anomalyco/opencode/issues/6774), the plugin cache locks to the version installed at first setup and does **not** auto-detect newer releases on npm.
 
@@ -156,7 +156,7 @@ Press **`Ctrl + P`** in OpenCode → `install plugin` → `opencode-visual-cache
 
 ---
 
-## Debug
+## 6. Debug
 
 Force English:
 
@@ -172,13 +172,13 @@ CACHE_TUI_LANG=en opencode
 
 ---
 
-## Compatibility
+## 7. Compatibility
 
 Model-agnostic — works with all OpenCode-compatible AI models (DeepSeek / Claude / GPT etc.).
 Token data and pricing are read via OpenCode SDK standard interfaces.
 
 ---
 
-## License
+## 8. License
 
 MIT
