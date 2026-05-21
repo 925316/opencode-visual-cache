@@ -593,8 +593,8 @@ function TokenCachePanel(props: {
     return pal().error
   })
 
-  /** Horizontal space eaten by border (1+1 when visible) + padding (2+2). */
-  const gutter = createMemo(() => (borderVisible() ? 2 : 0) + 4)
+  /** Horizontal space eaten by border (1+1 when visible) + padding (2+2 when visible). */
+  const gutter = createMemo(() => borderVisible() ? 6 : 0)
 
   const sep = createMemo(() => "\u2500".repeat(Math.max(1, panelWidth() - gutter())))
   function trendLabel(t: number): string {
@@ -623,8 +623,8 @@ function TokenCachePanel(props: {
       borderColor={pal().border}
       paddingTop={0}
       paddingBottom={0}
-      paddingLeft={2}
-      paddingRight={2}
+      paddingLeft={borderVisible() ? 2 : 0}
+      paddingRight={borderVisible() ? 2 : 0}
       flexDirection="column"
       gap={0}
       ref={boxEl}
